@@ -36,3 +36,7 @@ services:
       - '%app.consomer_api_secret%'
       - '%app.access_token%'
       - '%app.access_token_secret%'
+
+  App\Service\EmojiService:
+    arguments:
+      - '%kernel.project_dir%/src/Resources/emoji-data.txt'
