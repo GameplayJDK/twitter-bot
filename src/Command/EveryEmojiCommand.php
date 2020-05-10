@@ -3,7 +3,7 @@
 namespace App\Command;
 
 use App\Model\Configuration;
-use App\Service\EmojiService;
+use App\Service\Emoji\EmojiService;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -69,7 +69,7 @@ class EveryEmojiCommand extends CommandAbstract
     private function getMessage(string $format): string
     {
         $emoji = $this->emojiService
-            ->getEmojiRandom();
+            ->getRandomEmoji();
         return str_replace('{EMOJI}', $emoji, $format);
     }
 

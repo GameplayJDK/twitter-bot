@@ -1,0 +1,11 @@
+#!/usr/bin/env php
+<?php
+
+exit(
+        (int)!(
+                ( // If the emoji-data.txt does not exist, create the directory if it does not exist already, then download the file.
+                        is_writable('var/cache/unicode/emoji-data.txt') ||
+                        (file_exists('var/cache/unicode') || @mkdir('var/cache/unicode', true))
+                ) && @copy('https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt', 'var/cache/unicode/emoji-data.txt')
+        )
+);

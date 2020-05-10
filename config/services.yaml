@@ -37,6 +37,12 @@ services:
       - '%app.access_token%'
       - '%app.access_token_secret%'
 
-  App\Service\EmojiService:
+  App\Service\Emoji\EmojiProviderUnicode:
     arguments:
-      - '%kernel.project_dir%/src/Resources/emoji-data.txt'
+      - '%kernel.project_dir%/var/cache/unicode/emoji-data.txt'
+
+  App\Service\Emoji\EmojiProviderTwemoji:
+    arguments:
+      - '%kernel.project_dir%/var/cache/twemoji/assets/svg'
+
+  App\Service\Emoji\EmojiProviderInterface: '@App\Service\Emoji\EmojiProviderTwemoji'

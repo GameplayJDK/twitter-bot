@@ -48,10 +48,16 @@
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
         },
         "post-install-cmd": [
-            "@auto-scripts"
+            "@auto-scripts",
+            "@download-emoji-data"
         ],
         "post-update-cmd": [
-            "@auto-scripts"
+            "@auto-scripts",
+            "@download-emoji-data"
+        ],
+        "download-emoji-data": [
+            "@php bin/download-unicode-emoji-data",
+            "git -C var/cache/twemoji pull || git clone https://github.com/twitter/twemoji.git var/cache/twemoji"
         ]
     },
     "conflict": {
