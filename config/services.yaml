@@ -4,10 +4,11 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
-  app.consumer_api_key:       '%env(CONSUMER_API_KEY)%'
-  app.consomer_api_secret:    '%env(CONSUMER_API_SECRET)%'
-  app.access_token:           '%env(ACCESS_TOKEN)%'
-  app.access_token_secret:    '%env(ACCESS_TOKEN_SECRET)%'
+  app.twitter.consumer_api_key:       '%env(TWITTER_CONSUMER_API_KEY)%'
+  app.twitter.consumer_api_secret:    '%env(TWITTER_CONSUMER_API_SECRET)%'
+  app.twitter.access_token:           '%env(TWITTER_ACCESS_TOKEN)%'
+  app.twitter.access_token_secret:    '%env(TWITTER_ACCESS_TOKEN_SECRET)%'
+  app.google_cloud.key_file_path:     '%env(GOOGLE_CLOUD_KEY_FILE_PATH)%'
 
 services:
   # default configuration for services in *this* file
@@ -32,10 +33,21 @@ services:
 
   App\Model\Configuration:
     arguments:
-      - '%app.consumer_api_key%'
-      - '%app.consomer_api_secret%'
-      - '%app.access_token%'
-      - '%app.access_token_secret%'
+      - '%app.twitter.consumer_api_key%'
+      - '%app.twitter.consumer_api_secret%'
+      - '%app.twitter.access_token%'
+      - '%app.twitter.access_token_secret%'
+      - '%app.google_cloud.key_file_path%'
+
+  App\DependencyInjection\Factory\CodebirdFactory: ~
+
+  App\DependencyInjection\Factory\LanguageClientFactory: ~
+
+  Codebird\Codebird:
+    factory: '@App\DependencyInjection\Factory\CodebirdFactory'
+
+  Google\Cloud\Language\LanguageClient:
+    factory: '@App\DependencyInjection\Factory\LanguageClientFactory'
 
   App\Service\Emoji\EmojiProviderUnicode:
     arguments:

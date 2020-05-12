@@ -28,67 +28,82 @@ class Configuration
     /**
      * @var string
      */
-    private $consumerApiKey;
+    private $twitterConsumerApiKey;
 
     /**
      * @var string
      */
-    private $consumerApiSecret;
+    private $twitterConsumerApiSecret;
 
     /**
      * @var string
      */
-    private $accessToken;
+    private $twitterAccessToken;
 
     /**
      * @var string
      */
-    private $accessTokenSecret;
+    private $twitterAccessTokenSecret;
+
+    /**
+     * @var string
+     */
+    private $googleCloudKeyFilePath;
 
     /**
      * Configuration constructor.
-     * @param string $consumerApiKey
-     * @param string $consumerApiSecret
-     * @param string $accessToken
-     * @param string $accessTokenSecret
+     * @param string $twitterConsumerApiKey
+     * @param string $twitterConsumerApiSecret
+     * @param string $twitterAccessToken
+     * @param string $twitterAccessTokenSecret
+     * @param string $googleCloudKeyFilePath
      */
-    public function __construct(string $consumerApiKey, string $consumerApiSecret, string $accessToken, string $accessTokenSecret)
+    public function __construct(string $twitterConsumerApiKey, string $twitterConsumerApiSecret, string $twitterAccessToken, string $twitterAccessTokenSecret, string $googleCloudKeyFilePath)
     {
-        $this->consumerApiKey = $consumerApiKey;
-        $this->consumerApiSecret = $consumerApiSecret;
-        $this->accessToken = $accessToken;
-        $this->accessTokenSecret = $accessTokenSecret;
+        $this->twitterConsumerApiKey = $twitterConsumerApiKey;
+        $this->twitterConsumerApiSecret = $twitterConsumerApiSecret;
+        $this->twitterAccessToken = $twitterAccessToken;
+        $this->twitterAccessTokenSecret = $twitterAccessTokenSecret;
+        $this->googleCloudKeyFilePath = $googleCloudKeyFilePath;
     }
 
     /**
      * @return string
      */
-    public function getConsumerApiKey(): string
+    public function getTwitterConsumerApiKey(): string
     {
-        return $this->consumerApiKey;
+        return $this->twitterConsumerApiKey;
     }
 
     /**
      * @return string
      */
-    public function getConsumerApiSecret(): string
+    public function getTwitterConsumerApiSecret(): string
     {
-        return $this->consumerApiSecret;
+        return $this->twitterConsumerApiSecret;
     }
 
     /**
      * @return string
      */
-    public function getAccessToken(): string
+    public function getTwitterAccessToken(): string
     {
-        return $this->accessToken;
+        return $this->twitterAccessToken;
     }
 
     /**
      * @return string
      */
-    public function getAccessTokenSecret(): string
+    public function getTwitterAccessTokenSecret(): string
     {
-        return $this->accessTokenSecret;
+        return $this->twitterAccessTokenSecret;
+    }
+
+    /**
+     * @return string
+     */
+    public function getGoogleCloudKeyFilePath(): string
+    {
+        return $this->googleCloudKeyFilePath;
     }
 }

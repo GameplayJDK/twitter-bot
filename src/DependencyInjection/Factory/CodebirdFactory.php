@@ -17,55 +17,52 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace App\Service\Emoji;
+namespace App\DependencyInjection\Factory;
+
+use App\Model\Configuration;
+use Codebird\Codebird;
 
 /**
- * Class EmojiProviderAbstract
- * @package App\Service\Emoji
+ * Class CodebirdFactory
+ * @package App\DependencyInjection\Factory
  */
-abstract class EmojiProviderAbstract implements EmojiProviderInterface
+class CodebirdFactory
 {
     /**
-     * @var array|string[]
+     * @var Configuration
      */
-    protected $data;
+    private $configuration;
 
     /**
-     * EmojiProviderAbstract constructor.
+     * LanguageClientFactory constructor.
+     * @param Configuration $configuration
      */
-    public function __construct()
+    public function __construct(Configuration $configuration)
     {
-        $this->data = [];
+        $this->configuration = $configuration;
     }
 
     /**
-     * @inheritDoc
+     * @return Codebird
      */
-    public function getData(): array
+    public function __invoke(): Codebird
     {
-        if (empty($this->data)) {
-            $this->parse();
-        }
-
-        return $this->data;
+        return $this->create();
     }
 
     /**
-     * Run the parsing algorithm calling {@link add}.
+     * @return Codebird
      */
-    protected abstract function parse(): void;
-
-    /**
-     * @param string $dataItem
-     */
-    protected function add(string $dataItem): void
+    public function create(): Codebird
     {
-        $dataItem = strtolower($dataItem);
+        Codebird::setConsumerKey($this->configuration->getTwitterConsumerApiKey(),
+            $this->configuration->getTwitterConsumerApiSecret());
 
-        if (in_array($dataItem, $this->data, true)) {
-            return;
-        }
-
-        $this->data[] = $dataItem;
+        $codebird = Codebird::getInstance();
+        $codebird->setToken($this->configuration->getTwitterAccessToken(),
+            $this->configuration->getTwitterAccessTokenSecret());
+        $codebird->setReturnFormat(CODEBIRD_RETURNFORMAT_ARRAY);
+        return $codebird;
     }
+
 }

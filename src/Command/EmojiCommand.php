@@ -2,22 +2,22 @@
 
 namespace App\Command;
 
-use App\Model\Configuration;
 use App\Service\Emoji\EmojiService;
+use Codebird\Codebird;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Class EveryEmojiEyesCommand
+ * Class EmojiCommand
  * @package App\Command
  */
-class EveryEmojiCommand extends CommandAbstract
+class EmojiCommand extends CommandAbstract
 {
-    const MESSAGE_FORMAT = '{EMOJI}w{EMOJI}';
+    const ARGUMENT_DEFAULT_FORMAT = '{EMOJI}w{EMOJI}';
 
-    protected static $defaultName = 'bot:every-emoji';
+    protected static $defaultName = 'bot:emoji';
 
     /**
      * @var EmojiService
@@ -25,13 +25,13 @@ class EveryEmojiCommand extends CommandAbstract
     private $emojiService;
 
     /**
-     * EveryEmojiCommand constructor.
-     * @param Configuration $configuration
+     * EmojiCommand constructor.
+     * @param Codebird $codebird
      * @param EmojiService $emojiService
      */
-    public function __construct(Configuration $configuration, EmojiService $emojiService)
+    public function __construct(Codebird $codebird, EmojiService $emojiService)
     {
-        parent::__construct($configuration);
+        parent::__construct($codebird);
 
         $this->emojiService = $emojiService;
     }
@@ -42,8 +42,8 @@ class EveryEmojiCommand extends CommandAbstract
     protected function configure()
     {
         $this
-            ->setDescription('Tweet a random emoji.')
-            ->addArgument('format', InputArgument::OPTIONAL, 'The tweet message format.', static::MESSAGE_FORMAT);
+            ->setDescription('Tweet a message with a random emoji.')
+            ->addArgument('format', InputArgument::OPTIONAL, 'The tweet message format.', static::ARGUMENT_DEFAULT_FORMAT);
     }
 
     /**
@@ -59,18 +59,7 @@ class EveryEmojiCommand extends CommandAbstract
         $io->note("Format:  $format");
         $io->note("Message: $message");
 
-        return (int)$this->sendTweet($message);
-    }
-
-    /**
-     * @param string $format
-     * @return string
-     */
-    private function getMessage(string $format): string
-    {
-        $emoji = $this->emojiService
-            ->getRandomEmoji();
-        return str_replace('{EMOJI}', $emoji, $format);
+        return (int)!$this->sendTweet($message);
     }
 
     /**
@@ -83,9 +72,20 @@ class EveryEmojiCommand extends CommandAbstract
             'status' => $message,
         ]);
 
-        $this->codebird
+        $status = $this->codebird
             ->statuses_update($query);
 
-        return false;
+        return isset($status['id']);
+    }
+
+    /**
+     * @param string $format
+     * @return string
+     */
+    private function getMessage(string $format): string
+    {
+        $emoji = $this->emojiService
+            ->getRandomEmoji();
+        return str_replace('{EMOJI}', $emoji, $format);
     }
 }

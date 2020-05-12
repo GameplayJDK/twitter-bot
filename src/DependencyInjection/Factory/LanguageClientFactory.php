@@ -17,55 +17,46 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace App\Service\Emoji;
+namespace App\DependencyInjection\Factory;
+
+use App\Model\Configuration;
+use Google\Cloud\Language\LanguageClient;
 
 /**
- * Class EmojiProviderAbstract
- * @package App\Service\Emoji
+ * Class LanguageClientFactory
+ * @package App\DependencyInjection\Factory
  */
-abstract class EmojiProviderAbstract implements EmojiProviderInterface
+class LanguageClientFactory
 {
     /**
-     * @var array|string[]
+     * @var Configuration
      */
-    protected $data;
+    private $configuration;
 
     /**
-     * EmojiProviderAbstract constructor.
+     * LanguageClientFactory constructor.
+     * @param Configuration $configuration
      */
-    public function __construct()
+    public function __construct(Configuration $configuration)
     {
-        $this->data = [];
+        $this->configuration = $configuration;
     }
 
     /**
-     * @inheritDoc
+     * @return LanguageClient
      */
-    public function getData(): array
+    public function __invoke(): LanguageClient
     {
-        if (empty($this->data)) {
-            $this->parse();
-        }
-
-        return $this->data;
+        return $this->create();
     }
 
     /**
-     * Run the parsing algorithm calling {@link add}.
+     * @return LanguageClient
      */
-    protected abstract function parse(): void;
-
-    /**
-     * @param string $dataItem
-     */
-    protected function add(string $dataItem): void
+    public function create(): LanguageClient
     {
-        $dataItem = strtolower($dataItem);
-
-        if (in_array($dataItem, $this->data, true)) {
-            return;
-        }
-
-        $this->data[] = $dataItem;
+        return new LanguageClient([
+            'keyFilePath' => $this->configuration->getGoogleCloudKeyFilePath(),
+        ]);
     }
 }

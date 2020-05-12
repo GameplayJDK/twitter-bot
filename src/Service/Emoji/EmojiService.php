@@ -55,19 +55,40 @@ class EmojiService
     {
         $data = $this->getData();
 
-        /** @var int $itemIndex */
-        $itemIndex = array_rand($data);
-        $itemCode = $data[$itemIndex] ?? null;
+        /** @var int $index */
+        $index = array_rand($data);
+        $code = $data[$index] ?? null;
 
-        if (null === $itemCode) {
+        if (null === $code) {
             return null;
         }
 
-        $itemEntity = static::convertCodeToEntity($itemCode);
-        return static::convertEntityToCharacter($itemEntity);
+        $entity = static::convertCodeToEntity($code);
+        return static::convertEntityToCharacter($entity);
     }
 
     /**
+     * Create an emoji character from given code, if it is available from the list of available emojis.
+     *
+     * @param string $code
+     * @return string|null
+     */
+    public function createFromCode(string $code): ?string
+    {
+        $code = strtolower($code);
+        $data = $this->getData();
+
+        if (!in_array($code, $data)) {
+            return null;
+        }
+
+        $entity = static::convertCodeToEntity($code);
+        return static::convertEntityToCharacter($entity);
+    }
+
+    /**
+     * Get and cache the data in memory.
+     *
      * @return array|string[]
      */
     private function getData(): array
@@ -86,7 +107,7 @@ class EmojiService
      * @param string $code
      * @return string
      */
-    private static function convertCodeToEntity(string $code): string
+    public static function convertCodeToEntity(string $code): string
     {
         return "&#x{$code};";
     }
@@ -97,7 +118,7 @@ class EmojiService
      * @param string $itemEntity
      * @return string
      */
-    private static function convertEntityToCharacter(string $itemEntity): string
+    public static function convertEntityToCharacter(string $itemEntity): string
     {
         return html_entity_decode($itemEntity, ENT_NOQUOTES, 'UTF-8');
     }
