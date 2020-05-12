@@ -19,8 +19,6 @@
 
 namespace App\Help;
 
-use Help\Preg;
-
 /**
  * Trait HexRangeHandleTrait
  * @package App\Help

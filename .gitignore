@@ -18,3 +18,5 @@
 ###< symfony/phpunit-bridge ###
 
 node_modules/
+
+gc-keyfile.json

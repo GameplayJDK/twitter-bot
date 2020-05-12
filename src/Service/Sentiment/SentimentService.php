@@ -17,55 +17,47 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace App\Service\Emoji;
+namespace App\Service\Sentiment;
+
+use Google\Cloud\Language\LanguageClient;
 
 /**
- * Class EmojiProviderAbstract
- * @package App\Service\Emoji
+ * Class SentimentService
+ * @package App\Service\Sentiment
  */
-abstract class EmojiProviderAbstract implements EmojiProviderInterface
+class SentimentService
 {
-    /**
-     * @var array|string[]
-     */
-    protected $data;
+    const KEY_SCORE = 'score';
+    const KEY_MAGNITUDE = 'magnitude';
 
     /**
-     * EmojiProviderAbstract constructor.
+     * @var LanguageClient
      */
-    public function __construct()
+    private $languageClient;
+
+    /**
+     * SentimentService constructor.
+     * @param LanguageClient $languageClient
+     */
+    public function __construct(LanguageClient $languageClient)
     {
-        $this->data = [];
+        $this->languageClient = $languageClient;
     }
 
     /**
-     * @inheritDoc
+     * Analyse the given text using the google natural language api for it's sentiment.
+     *
+     * @param string $text
+     * @return array
      */
-    public function getData(): array
+    public function analyze(string $text): array
     {
-        if (empty($this->data)) {
-            $this->parse();
-        }
+        $annotation = $this->languageClient
+            ->analyzeSentiment($text);
 
-        return $this->data;
-    }
-
-    /**
-     * Run the parsing algorithm calling {@link add}.
-     */
-    protected abstract function parse(): void;
-
-    /**
-     * @param string $dataItem
-     */
-    protected function add(string $dataItem): void
-    {
-        $dataItem = strtolower($dataItem);
-
-        if (in_array($dataItem, $this->data, true)) {
-            return;
-        }
-
-        $this->data[] = $dataItem;
+        return $annotation->sentiment() ?: [
+            static::KEY_SCORE /*******/ => null,
+            static::KEY_MAGNITUDE /***/ => null,
+        ];
     }
 }

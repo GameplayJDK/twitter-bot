@@ -17,55 +17,19 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace App\Service\Emoji;
+namespace App\Repository\Sentiment;
+
+use App\Model\Sentiment\Tweet;
 
 /**
- * Class EmojiProviderAbstract
- * @package App\Service\Emoji
+ * Interface TweetRepositoryInterface
+ * @package App\Repository\Sentiment
  */
-abstract class EmojiProviderAbstract implements EmojiProviderInterface
+interface TweetRepositoryInterface
 {
     /**
-     * @var array|string[]
+     * @param int $limit
+     * @return array|Tweet[]
      */
-    protected $data;
-
-    /**
-     * EmojiProviderAbstract constructor.
-     */
-    public function __construct()
-    {
-        $this->data = [];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getData(): array
-    {
-        if (empty($this->data)) {
-            $this->parse();
-        }
-
-        return $this->data;
-    }
-
-    /**
-     * Run the parsing algorithm calling {@link add}.
-     */
-    protected abstract function parse(): void;
-
-    /**
-     * @param string $dataItem
-     */
-    protected function add(string $dataItem): void
-    {
-        $dataItem = strtolower($dataItem);
-
-        if (in_array($dataItem, $this->data, true)) {
-            return;
-        }
-
-        $this->data[] = $dataItem;
-    }
+    public function getAll(int $limit = 20): array;
 }
