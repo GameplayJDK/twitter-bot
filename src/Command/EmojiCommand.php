@@ -56,8 +56,8 @@ class EmojiCommand extends CommandAbstract
 
         $message = $this->getMessage($format);
 
-        $io->note("Format:  $format");
-        $io->note("Message: $message");
+        $io->note("Format:  {$format}");
+        $io->note("Message: {$message}");
 
         return (int)!$this->sendTweet($message);
     }
