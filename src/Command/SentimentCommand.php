@@ -22,13 +22,20 @@ class SentimentCommand extends CommandAbstract
     const ARGUMENT_DEFAULT_FORMAT = 'mood: {EMOJI}';
 
     const OPTION_DEFAULT_LIMIT = 20;
+    const OPTION_DEFAULT_SINCE = -1;
 
     protected static $defaultName = 'bot:sentiment';
 
     protected static $moodMatrix = [
+        '1f621', // Pouting Face
+        '1F620', // Angry Face
         '1f641', // Slightly Frowning Face
+
         '1f610', // Neutral Face
+
         '1f642', // Slightly Smiling Face
+        '1f600', // Grinning Face
+        '263A', // Smiling Face
     ];
 
     /**
@@ -63,7 +70,8 @@ class SentimentCommand extends CommandAbstract
         $this
             ->setDescription('Analyse a tweet mention and respond with the corresponding emoji.')
             ->addArgument('format', InputArgument::OPTIONAL, 'The tweet message format.', static::ARGUMENT_DEFAULT_FORMAT)
-            ->addOption('limit', 'l', InputOption::VALUE_REQUIRED, 'The response tweet limit.', static::OPTION_DEFAULT_LIMIT);
+            ->addOption('limit', 'l', InputOption::VALUE_OPTIONAL, 'The response tweet limit.', static::OPTION_DEFAULT_LIMIT)
+            ->addOption('since', 's', InputOption::VALUE_OPTIONAL, 'The last mention tweet id.', static::OPTION_DEFAULT_SINCE);
     }
 
     /**
@@ -75,14 +83,17 @@ class SentimentCommand extends CommandAbstract
         $format = $input->getArgument('format');
         $limit = $input->getOption('limit');
         $limit = (int)$limit;
+        $since = $input->getOption('since');
+        $since = (int)$since;
 
-        $io->note("Format:  $format");
-        $io->note("Limit:   $limit");
+        $io->note("Format:  {$format}");
+        $io->note("Limit:   {$limit}");
+        $io->note("Since:   {$since}");
 
         $result = 0;
 
         $tweetList = $this->tweetRepository
-            ->getAll($limit);
+            ->getAll($limit, $since);
 
         foreach ($tweetList as $tweet) {
             $result += (int)!$this->answerTweet($format, $tweet);

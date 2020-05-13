@@ -29,7 +29,8 @@ interface TweetRepositoryInterface
 {
     /**
      * @param int $limit
+     * @param int $since
      * @return array|Tweet[]
      */
-    public function getAll(int $limit = 20): array;
+    public function getAll(int $limit = 20, int $since = -1): array;
 }

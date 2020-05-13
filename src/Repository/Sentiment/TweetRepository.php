@@ -63,9 +63,9 @@ class TweetRepository implements TweetRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function getAll(int $limit = 20): array
+    public function getAll(int $limit = 20, int $since = -1): array
     {
-        $timeline = $this->requestTimeline($limit);
+        $timeline = $this->requestTimeline($limit, $since);
 
         $tweetList = [];
 
@@ -91,16 +91,17 @@ class TweetRepository implements TweetRepositoryInterface
 
     /**
      * @param int $limit
+     * @param int $since
      * @return array|array[]
      */
-    private function requestTimeline(int $limit): array
+    private function requestTimeline(int $limit, int $since): array
     {
         $limit = max(20, min($limit, 200));
 
         $queryData = [
             'count' /*****/ => $limit,
         ];
-        if (null !== ($lastId = $this->getLastId())) {
+        if (-1 !== ($lastId = $since) || null !== ($lastId = $this->getLastId())) {
             $queryData['since_id'] = $lastId;
         }
 
