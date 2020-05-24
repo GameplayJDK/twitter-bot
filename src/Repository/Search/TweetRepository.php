@@ -21,6 +21,7 @@ namespace App\Repository\Search;
 
 use App\Model\Search\Tweet;
 use Codebird\Codebird;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 
 /**
@@ -55,7 +56,7 @@ class TweetRepository implements TweetRepositoryInterface
     {
         $this->codebird = $codebird;
         $this->cache = $cache;
-        $this->cacheValue = null;
+        $this->cacheValue = [];
     }
 
     /**
@@ -114,10 +115,72 @@ class TweetRepository implements TweetRepositoryInterface
             return null === ($value['in_reply_to_status_id'] ?? null);
         });
 
-        // TODO: Add cache/db backed check.
+        $alreadyFound = $this->getAlreadyFound($search) ?: [];
+
+        // Array of already found ids is edited inside the closure.
+        $timeline = array_filter($timeline, function (array $value) use (&$alreadyFound): bool {
+            $exist = in_array($id = $value['id'], $alreadyFound, is_int($id));
+
+            if ($exist) {
+                $alreadyFound[] = $id;
+            }
+
+            return !$exist;
+        });
+
+        $this->setAlreadyFound($search, $alreadyFound);
 
         $timeline = array_values($timeline);
 
         return $timeline;
+    }
+
+    /**
+     * @param string $search
+     * @return array|null
+     */
+    public function getAlreadyFound(string $search): ?array
+    {
+        $alreadyFound = null;
+
+        try {
+            $item = $this->cache
+                ->getItem(self::CACHE_KEY_ALREADY_FOUND);
+
+            if ($item->isHit()) {
+                $this->cacheValue = is_array($value = $item->get())
+                    ? $value
+                    : [];
+
+                $alreadyFound = $this->cacheValue[$search] ?? null;
+            }
+        } catch (InvalidArgumentException $exception) {
+        }
+
+        return $alreadyFound;
+    }
+
+    /**
+     * @param string $search
+     * @param array|null $alreadyFound
+     */
+    public function setAlreadyFound(string $search, ?array $alreadyFound): void
+    {
+        if (null === $alreadyFound) {
+            return;
+        }
+
+        $this->cacheValue[$search] = $alreadyFound;
+
+        try {
+            $item = $this->cache
+                ->getItem(self::CACHE_KEY_ALREADY_FOUND);
+
+            $item->set($this->cacheValue);
+
+            $this->cache
+                ->save($item);
+        } catch (InvalidArgumentException $exception) {
+        }
     }
 }
