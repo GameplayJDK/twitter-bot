@@ -1,9 +1,26 @@
 <?php
+/**
+ * The MIT License (MIT)
+ * Copyright (c) 2020 GameplayJDK
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 namespace App\Command;
 
 use App\Model\Sentiment\Tweet as TweetSentiment;
-use App\Repository\Sentiment\TweetRepository as TweetRepositorySentiment;
+use App\Repository\Sentiment\TweetRepositoryInterface as SentimentTweetRepositoryInterface;
 use App\Service\Emoji\EmojiService;
 use App\Service\Sentiment\SentimentService;
 use Codebird\Codebird;
@@ -19,6 +36,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class SentimentCommand extends CommandAbstract
 {
+    // TODO: Use string instead of int id.
+
     const ARGUMENT_DEFAULT_FORMAT = 'mood: {EMOJI}';
 
     const OPTION_DEFAULT_LIMIT = 20;
@@ -39,7 +58,7 @@ class SentimentCommand extends CommandAbstract
     ];
 
     /**
-     * @var TweetRepositorySentiment
+     * @var SentimentTweetRepositoryInterface
      */
     private $tweetRepository;
 
@@ -51,10 +70,10 @@ class SentimentCommand extends CommandAbstract
     /**
      * SentimentCommand constructor.
      * @param Codebird $codebird
-     * @param TweetRepositorySentiment $tweetRepository
+     * @param SentimentTweetRepositoryInterface $tweetRepository
      * @param EmojiService $emojiService
      */
-    public function __construct(Codebird $codebird, TweetRepositorySentiment $tweetRepository, EmojiService $emojiService)
+    public function __construct(Codebird $codebird, SentimentTweetRepositoryInterface $tweetRepository, EmojiService $emojiService)
     {
         parent::__construct($codebird);
 
@@ -70,8 +89,8 @@ class SentimentCommand extends CommandAbstract
         $this
             ->setDescription('Analyse a tweet mention and respond with the corresponding emoji.')
             ->addArgument('format', InputArgument::OPTIONAL, 'The tweet message format.', static::ARGUMENT_DEFAULT_FORMAT)
-            ->addOption('limit', 'l', InputOption::VALUE_OPTIONAL, 'The response tweet limit.', static::OPTION_DEFAULT_LIMIT)
-            ->addOption('since', 's', InputOption::VALUE_OPTIONAL, 'The last mention tweet id.', static::OPTION_DEFAULT_SINCE);
+            ->addOption('limit', 'l', InputOption::VALUE_REQUIRED, 'The response tweet limit.', static::OPTION_DEFAULT_LIMIT)
+            ->addOption('since', 's', InputOption::VALUE_REQUIRED, 'The last mention tweet id.', static::OPTION_DEFAULT_SINCE);
     }
 
     /**

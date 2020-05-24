@@ -17,30 +17,20 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace App\Command;
+namespace App\Repository\Search;
 
-use Codebird\Codebird;
-use Symfony\Component\Console\Command\Command;
+use App\Model\Search\Tweet;
 
 /**
- * Class TestCommand
- * @package App\Command
+ * Interface TweetRepositoryInterface
+ * @package App\Repository\Search
  */
-abstract class CommandAbstract extends Command
+interface TweetRepositoryInterface
 {
     /**
-     * @var Codebird|null
+     * @param int $limit
+     * @param string $search
+     * @return array|Tweet[]
      */
-    protected $codebird;
-
-    /**
-     * CommandAbstract constructor.
-     * @param Codebird $codebird
-     */
-    public function __construct(Codebird $codebird)
-    {
-        $this->codebird = $codebird;
-
-        parent::__construct(null);
-    }
+    public function getAll(int $limit = 15, string $search = ''): array;
 }

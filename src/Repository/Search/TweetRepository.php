@@ -17,21 +17,19 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace App\Repository\Sentiment;
+namespace App\Repository\Search;
 
-use App\Model\Sentiment\Tweet;
-use App\Service\Sentiment\SentimentService;
+use App\Model\Search\Tweet;
 use Codebird\Codebird;
-use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 
 /**
  * Class TweetRepository
- * @package App\Repository\Sentiment
+ * @package App\Repository\Search
  */
 class TweetRepository implements TweetRepositoryInterface
 {
-    const CACHE_KEY_LAST_ID = 'tweet_repository_sentiment.last_id';
+    const CACHE_KEY_ALREADY_FOUND = 'tweet_repository_search.already_found';
 
     /**
      * @var Codebird
@@ -39,34 +37,33 @@ class TweetRepository implements TweetRepositoryInterface
     private $codebird;
 
     /**
-     * @var SentimentService
-     */
-    private $sentimentService;
-
-    /**
      * @var AdapterInterface
      */
     private $cache;
 
     /**
+     * @var array|null
+     */
+    private $cacheValue;
+
+    /**
      * TweetRepository constructor.
      * @param Codebird $codebird
-     * @param SentimentService $sentimentService
      * @param AdapterInterface $cache
      */
-    public function __construct(Codebird $codebird, SentimentService $sentimentService, AdapterInterface $cache)
+    public function __construct(Codebird $codebird, AdapterInterface $cache)
     {
         $this->codebird = $codebird;
-        $this->sentimentService = $sentimentService;
         $this->cache = $cache;
+        $this->cacheValue = null;
     }
 
     /**
      * @inheritDoc
      */
-    public function getAll(int $limit = 20, int $since = -1): array
+    public function getAll(int $limit = 15, string $search = ''): array
     {
-        $timeline = $this->requestTimeline($limit, $since);
+        $timeline = $this->requestTimeline($limit, $search);
 
         $tweetList = [];
 
@@ -80,10 +77,6 @@ class TweetRepository implements TweetRepositoryInterface
             $author = $status['user']['screen_name'] ?? null;
             $tweet->setAuthor($author);
 
-            $sentiment = $this->sentimentService
-                ->analyze($text);
-            $tweet->setSentiment($sentiment);
-
             $tweetList[] = $tweet;
         }
 
@@ -92,80 +85,39 @@ class TweetRepository implements TweetRepositoryInterface
 
     /**
      * @param int $limit
-     * @param int $since
+     * @param string $search
      * @return array|array[]
      */
-    private function requestTimeline(int $limit, int $since): array
+    private function requestTimeline(int $limit, string $search): array
     {
-        $limit = max(20, min($limit, 200));
+        $limit = max(15, min($limit, 100));
+        $search = trim($search);
 
-        $queryData = [
-            'count' /*****/ => $limit,
-        ];
-        if (-1 !== ($lastId = $since) || null !== ($lastId = $this->getLastId())) {
-            $queryData['since_id'] = $lastId;
+        $timeline = [];
+
+        if (empty($search)) {
+            return $timeline;
         }
 
-        $query = http_build_query($queryData);
+        $query = http_build_query([
+            'count' /*********/ => $limit,
+            'q' /*************/ => $search,
+            'result_type' /***/ => 'recent',
+        ]);
 
         /** @var array|array[] $timeline */
         $timeline = $this->codebird
-            ->statuses_mentionsTimeline($query);
+            ->search_tweets($query);
+        $timeline = $timeline['statuses'];
         $timeline = array_filter($timeline, 'is_int', ARRAY_FILTER_USE_KEY);
-
-        $status = reset($timeline);
-        if (false !== $status && null !== ($lastId = $status['id'] ?? null)) {
-            $this->setLastId($lastId);
-        }
-
         $timeline = array_filter($timeline, function (array $value): bool {
             return null === ($value['in_reply_to_status_id'] ?? null);
         });
+
+        // TODO: Add cache/db backed check.
+
         $timeline = array_values($timeline);
 
         return $timeline;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getLastId(): ?int
-    {
-        $lastId = null;
-
-        try {
-            $item = $this->cache
-                ->getItem(self::CACHE_KEY_LAST_ID);
-
-            if ($item->isHit()) {
-                $lastId = is_int($value = $item->get())
-                    ? $value
-                    : null;
-            }
-        } catch (InvalidArgumentException $exception) {
-        }
-
-        return $lastId;
-    }
-
-    /**
-     * @param int|null $lastId
-     */
-    public function setLastId(?int $lastId): void
-    {
-        if (null === $lastId) {
-            return;
-        }
-
-        try {
-            $item = $this->cache
-                ->getItem(self::CACHE_KEY_LAST_ID);
-
-            $item->set($lastId);
-
-            $this->cache
-                ->save($item);
-        } catch (InvalidArgumentException $exception) {
-        }
     }
 }

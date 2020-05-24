@@ -19,28 +19,32 @@
 
 namespace App\Command;
 
-use Codebird\Codebird;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Class TestCommand
+ * Class XavierImageCommand
  * @package App\Command
  */
-abstract class CommandAbstract extends Command
+class XavierImageCommand extends ImageCommand
 {
-    /**
-     * @var Codebird|null
-     */
-    protected $codebird;
+    const ARGUMENT_VALUE_SEARCH = '"Oh Gott!"';
+    const ARGUMENT_VALUE_IMAGE = __DIR__ . '/../../xavier_oh_gott.png';
+
+    protected static $defaultName = 'bot:image:xavier';
 
     /**
-     * CommandAbstract constructor.
-     * @param Codebird $codebird
+     * @inheritDoc
      */
-    public function __construct(Codebird $codebird)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->codebird = $codebird;
+        $input->setArgument('search', static::ARGUMENT_VALUE_SEARCH);
+        $input->setArgument('image', static::ARGUMENT_VALUE_IMAGE);
 
-        parent::__construct(null);
+        return parent::execute($input, $output);
     }
 }
